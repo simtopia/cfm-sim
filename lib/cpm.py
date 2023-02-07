@@ -1,5 +1,5 @@
-from lib.cfm import Pool, value_cfm, Exchange
-from lib.grad import grad
+from .cfm import Pool, value_cfm, Exchange
+from .grad import grad
 
 
 def cpm_get_x(y, k):

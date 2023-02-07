@@ -1,5 +1,5 @@
-from lib.cfm import Pool, Exchange
-from lib.grad import grad
+from .cfm import Pool, Exchange
+from .grad import grad
 
 from scipy.optimize import root_scalar, minimize
 import numpy as np

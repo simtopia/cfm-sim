@@ -2,7 +2,7 @@ import numpy as np
 from dataclasses import dataclass
 from abc import abstractmethod
 
-from lib.grad import grad
+from .grad import grad
 
 
 @dataclass
