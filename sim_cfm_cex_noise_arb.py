@@ -61,6 +61,8 @@ def run_sim(init_price: float, N_mc: int, gammas, sigmas, lambdas, ts: np.ndarra
                     lag_arrival_process = sample_exponential(lam=lam)
                     last_arrival_time = t
 
+                cpm_illiquid.update_past()
+
             # save episode
             S_liquid, _, _ = cex.price_descr
             S_illiquid, _, _ = cpm_illiquid.price_descr

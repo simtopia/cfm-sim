@@ -1,4 +1,4 @@
-from .cfm import Pool, Exchange
+from .exchange import Pool, Exchange
 from .grad import grad
 
 from scipy.optimize import root_scalar, minimize

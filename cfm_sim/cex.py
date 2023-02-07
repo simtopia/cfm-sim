@@ -1,6 +1,6 @@
 import numpy as np
 
-from .cfm import Exchange
+from .exchange import Exchange
 
 
 class Price:

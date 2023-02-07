@@ -1,4 +1,4 @@
-from .cfm import Pool, value_cfm, Exchange
+from .exchange import Pool, value_cfm, Exchange
 from .grad import grad
 
 
@@ -67,14 +67,6 @@ class CPM(Exchange):
         delta_y = y_new - self.y
         return delta_y
 
-    #def S(self):
-    #    return self.y / self.x # price of x in y. To be changed for more general formula with automatic differentiation
-
-    #def dSdx(self):
-    #    return -self.y / self.x**2
-
-    #def dSdy(self):
-    #    return 1/self.x
 
     def fee(self, delta_y, delta_x,**kwargs):
         if self.gamma is not None:
@@ -90,4 +82,4 @@ class CPM(Exchange):
         self.x += delta_x
         self.fees.y += fee['y']
         self.fees.x += fee['x']
-        self.update_past()
+        #self.update_past()

@@ -54,10 +54,7 @@ class Exchange(Pool):
     def execute_trade(self, **kwargs):
         pass
 
-    #@abstractmethod
-    #def S(self):
-    #    ...
-
+    
     def realized_vol(self):
         past = np.array(self.S_past)
         ret = (past[1:] - past[:-1]) / past[:-1]
