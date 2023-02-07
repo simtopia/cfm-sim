@@ -19,10 +19,10 @@ import time
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from lib.trader import Trader, Arbitrageur
-from lib.cpm import CPM
-from lib.cex import CEX
-from lib.poisson_process import sample_exponential
+from cfm_sim.trader import Trader, Arbitrageur
+from cfm_sim.cpm import CPM
+from cfm_sim.cex import CEX
+from cfm_sim.poisson_process import sample_exponential
 
 
 
