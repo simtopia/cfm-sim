@@ -17,16 +17,23 @@ class Price:
 
         return S, dSdx, dSdy
 
+class BondCurve:
+
+    def __get__(self, obj, objtype=None):
+        k = obj.y * obj.x
+        return k
+
 class CPM(Exchange):
     """Uniswap v3. The fees go in a different pool....
     """
     
     price_descr = Price()
+    k = BondCurve()
     
 
     def __init__(self, x: float, y: float, **kwargs):
         super().__init__(x=x,y=y, init_price=y/x)
-        self.k = x*y # trading function
+        #self.k = x*y # trading function
         self.gamma = kwargs.get('gamma')
         self.P = grad(self.get_delta_x, argnums=1)
         self.streaming_premia = 0
