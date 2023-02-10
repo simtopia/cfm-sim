@@ -1,4 +1,4 @@
-from .exchange import Pool, value_cfm, Exchange
+from .exchange import Pool, Exchange
 from .grad import grad
 
 
@@ -7,6 +7,21 @@ def cpm_get_x(y, k):
     return k / y
 
 
+def value_cpm(x: float, y: float, S: float):
+    """ Value of the pool
+    
+    Parameters
+    ----------
+    S: float
+        Price of asset x in y in a reference market
+
+    Returns
+    -------
+    V: float
+        V = 2 * (x * y)^{1/2} * S^{1/2}
+    """
+    return 2 * (x*y*S)**0.5 
+    #return y + x * S
 
 class Price:
 
@@ -32,14 +47,18 @@ class CPM(Exchange):
     
 
     def __init__(self, x: float, y: float, **kwargs):
-        super().__init__(x=x,y=y, init_price=y/x)
+        try:
+            super().__init__(x=x,y=y, init_price=y/x)
+        except ZeroDivisionError:
+            super().__init__(x=x,y=y,init_price=0)
+        
         #self.k = x*y # trading function
         self.gamma = kwargs.get('gamma')
         self.P = grad(self.get_delta_x, argnums=1)
         self.streaming_premia = 0
 
     def V(self, S):
-        return value_cfm(self.x, self.y, S)
+        return value_cpm(self.x, self.y, S)
 
     def _premium_fee(self, delta_y: float, S: float, **kwargs):
         """
@@ -83,6 +102,8 @@ class CPM(Exchange):
 
     def update_past(self):
         self.S_past.append(self.y / self.x)
+        self.x_past.append(self.x)
+        self.y_past.append(self.y)
     
     def execute_trade(self, delta_x, delta_y, fee):
         self.y += delta_y

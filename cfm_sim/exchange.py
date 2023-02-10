@@ -11,20 +11,6 @@ class Pool:
     y: float
 
 
-def value_cfm(x: float, y: float, S: float):
-    """ Value of the pool
-    
-    Parameters
-    ----------
-    S: float
-        Price of asset x in y in a reference market
-
-    Returns
-    -------
-    V: float
-        V = y + x * S
-    """
-    return y + x * S
 
 class Exchange(Pool):
 
@@ -33,6 +19,9 @@ class Exchange(Pool):
         self.fees = Pool(x=0, y=0)
         self.S_past = [init_price]
         self.dt = 0.01
+        self.x_past = [self.x]
+        self.y_past = [self.y]
+
 
     @abstractmethod
     def V(self, S):
