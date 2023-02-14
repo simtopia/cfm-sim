@@ -57,6 +57,9 @@ class CPM(Exchange):
         self.P = grad(self.get_delta_x, argnums=1)
         self.streaming_premia = 0
 
+        self.fees_x_past = [self.fees.x]
+        self.fees_y_past = [self.fees.y]
+
     def V(self, S):
         return value_cpm(self.x, self.y, S)
 
@@ -104,6 +107,9 @@ class CPM(Exchange):
         self.S_past.append(self.y / self.x)
         self.x_past.append(self.x)
         self.y_past.append(self.y)
+
+        self.fees_x_past.append(self.fees.x)
+        self.fees_y_past.append(self.fees.y)
     
     def execute_trade(self, delta_x, delta_y, fee):
         self.y += delta_y
