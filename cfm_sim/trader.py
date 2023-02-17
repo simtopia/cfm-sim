@@ -95,7 +95,7 @@ def get_profit(delta_y: float, to_liquid: Exchange, to_illiquid: Exchange, minim
     cost_with_fee = lambda x: -(2-to_illiquid.gamma) * to_illiquid.get_delta_y(x)
     price_illiquid = grad(cost_with_fee, argnums=0)(0)
     #price_liquid = to_liquid.S()
-    price_liquid, _, _ = to_liquid.price_descr
+    price_liquid = to_liquid.price_descr
     if price_liquid < price_illiquid:
         delta_x, _, _ = request_trade(delta=delta_y, to=to_liquid, including_fee=True, asset="y")
         trade1 = {'delta':delta_y, 'to':to_liquid, 'including_fee': True, 'asset': 'y'}
@@ -127,7 +127,7 @@ class Arbitrageur(Trader):
         cost_with_fee = lambda x: -(2-to_illiquid.gamma) * to_illiquid.get_delta_y(x)
         price_illiquid = grad(cost_with_fee, argnums=0)(0)
         #price_liquid = to_liquid.S()
-        price_liquid, _, _ = to_liquid.price_descr
+        price_liquid = to_liquid.price_descr
         
         argmin = minimize(fun = get_profit, x0=0, args=(to_liquid, to_illiquid, True))
         profit, trade1, trade2 = get_profit(delta_y=argmin.x.item(), to_liquid=to_liquid, to_illiquid=to_illiquid, minimize=False)
