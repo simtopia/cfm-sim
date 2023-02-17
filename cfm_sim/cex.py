@@ -7,7 +7,7 @@ class Price:
 
     def __get__(self, obj, objtype=None):
         S = obj.S_past[-1]
-        return S, None, None
+        return S
 
 
 class CEX(Exchange):
