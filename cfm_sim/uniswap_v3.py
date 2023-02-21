@@ -92,6 +92,13 @@ class CPM_CL(Exchange):
         y_new = k**2 / (x_new + k / np.sqrt(self.P_u)) - k * np.sqrt(self.P_l)
         delta_y = y_new - self.y
         return delta_y
+    
+    def _percentage_fee(self, delta_y: float, delta_x: float, **kwargs):
+        assert(delta_y * delta_x < 0, "{} and {} need to have different sign".format(delta_y, delta_x))
+        if delta_y > 0:
+            return {'x':0, 'y':(1-self.gamma)*delta_y}
+        else:
+            return {'x':(1-self.gamma)*delta_x, 'y':0}
 
 
     def update_past(self):
@@ -102,12 +109,6 @@ class CPM_CL(Exchange):
         self.fees_x_past.append(self.fees.x)
         self.fees_y_past.append(self.fees.y)
     
-    def execute_trade(self, delta_x, delta_y, fee):
-        self.y += delta_y
-        self.x += delta_x
-        self.fees.y += fee['y']
-        self.fees.x += fee['x']
-        #self.update_past()
 
 
 class UniswapV3():
@@ -184,6 +185,7 @@ class UniswapV3():
                 delta_x = self.cpm_cl[p_l].x + delta_x
 
                 if execute:
+                    self.cpm_cl[p_l].fees.y += (y_max - self.cpm_cl[p_l].y) * (1-self.cpm_cl[p_l].gamma)
                     self.cpm_cl[p_l].x = 0
                     self.cpm_cl[p_l].y = y_max
 
@@ -193,6 +195,7 @@ class UniswapV3():
                 delta_x = self.cpm_cl[p_l].x + delta_x - x_max
 
                 if execute:
+                    self.cpm_cl[p_l].fees.x += delta_x * (1-self.cpm_cl[p_l].gamma)
                     self.cpm_cl[p_l].x = x_max
                     self.cpm_cl[p_l].y = 0
 
@@ -201,13 +204,15 @@ class UniswapV3():
                 if execute:
                     self.cpm_cl[p_l].x += delta_x
                     self.cpm_cl[p_l].y += self.cpm_cl[p_l].get_delta_y(delta_x)
+                    if delta_x >= 0:
+                        self.cpm_cl[p_l].fees.x += delta_x * (1-self.cpm_cl[p_l].gamma)
+                    else:
+                        self.cpm_cl[p_l].fees.y += self.cpm_cl[p_l].get_delta_y(delta_x) * (1-self.cpm_cl[p_l].gamma)
                 break
         return delta_y
 
-    def execute_trade(self, delta_x, delta_y, fee):
+    def execute_trade(self, delta_x, delta_y, **kwargs):
         self.get_delta_y(delta_x = delta_x, execute = True)
-        self.fees.y += fee['y']
-        self.fees.x += fee['x']
     
     def _percentage_fee(self, delta_y: float, delta_x: float, **kwargs):
         assert(delta_y * delta_x < 0, "{} and {} need to have different sign".format(delta_y, delta_x))
@@ -258,8 +263,13 @@ class Position():
         self.tick = tick
         self.tick_pu = min(cpm.range_prices[cpm.range_prices > tick])
 
+        self.streaming_premia = 0
+
 
     def payoff_sim(self, S):
+        """
+        Exact payoff for different values of S to avoid doing a simulation
+        """
         if S<self.tick:
             y=0
             x = self.cpm.cpm_cl[self.tick].k**2 / (self.cpm.cpm_cl[self.tick].k * np.sqrt(self.tick)) - self.cpm.cpm_cl[self.tick].k / np.sqrt(self.tick_pu)
@@ -277,6 +287,12 @@ class Position():
 
         return payoff
 
+    def payoff(self, S):
+        closeup_x = 1 / self.beta * self.cpm.cpm_cl[self.tick].x - self.cpm.cpm_cl[self.tick].x
+        closeup_y = 1 / self.beta * self.cpm.cpm_cl[self.tick].y - self.cpm.cpm_cl[self.tick].y
+
+        payoff = (self.x - closeup_x) * S + (self.y - closeup_y)
+        return payoff
 
     def close(self, S):
         
@@ -289,6 +305,12 @@ class Position():
         self.cpm.cpm_cl[self.tick].y += closeup_y
         
         return payoff
+
+    def update_streaming_premia(self, h: float, sigma: float, S: float):
+        payoff = lambda x: self.payoff_sim(x)
+        curv = grad(grad(payoff))(S)
+        self.streaming_premia += 0.5 * sigma * S**2 * curv * h
+        return 0
 
 
 

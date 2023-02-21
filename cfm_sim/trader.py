@@ -129,11 +129,15 @@ class Arbitrageur(Trader):
         #price_liquid = to_liquid.S()
         price_liquid = to_liquid.price_descr
         
-        argmin = minimize(fun = get_profit, x0=0, args=(to_liquid, to_illiquid, True))
-        profit, trade1, trade2 = get_profit(delta_y=argmin.x.item(), to_liquid=to_liquid, to_illiquid=to_illiquid, minimize=False)
-        if profit > 0 and argmin.x.item() < 0:
-            self.send_trade(**trade1)
-            self.send_trade(**trade2)
+        try:
+            argmin = minimize(fun = get_profit, x0=0, args=(to_liquid, to_illiquid, True))
+            profit, trade1, trade2 = get_profit(delta_y=argmin.x.item(), to_liquid=to_liquid, to_illiquid=to_illiquid, minimize=False)
+            if profit > 0 and argmin.x.item() < 0:
+                self.send_trade(**trade1)
+                self.send_trade(**trade2)
+        except KeyError:
+            pass
+
 
 def noise_trade_size_gbm(cfm: Exchange, sigma: float, h: float, with_drift: bool = False):
     """
