@@ -202,12 +202,13 @@ class UniswapV3():
             else:
                 delta_y += self.cpm_cl[p_l].get_delta_y(delta_x)
                 if execute:
+                    new_delta_y = self.cpm_cl[p_l].get_delta_y(delta_x)
+                    self.cpm_cl[p_l].y += new_delta_y
                     self.cpm_cl[p_l].x += delta_x
-                    self.cpm_cl[p_l].y += self.cpm_cl[p_l].get_delta_y(delta_x)
                     if delta_x >= 0:
                         self.cpm_cl[p_l].fees.x += delta_x * (1-self.cpm_cl[p_l].gamma)
                     else:
-                        self.cpm_cl[p_l].fees.y += self.cpm_cl[p_l].get_delta_y(delta_x) * (1-self.cpm_cl[p_l].gamma)
+                        self.cpm_cl[p_l].fees.y += new_delta_y * (1-self.cpm_cl[p_l].gamma)
                 break
         return delta_y
 
@@ -236,6 +237,19 @@ class UniswapV3():
         df.plot(x='price_range', y=['x','y'], kind='bar', ax=ax)
         ax.set_xlabel(r'Lower bound of price ticks')
         return fig, ax
+
+    def get_price(self):
+        
+        for tick, cpm in self.cpm_cl.items():
+            if cpm.x > 0 and cpm.y > 0:
+                return cpm.price_descr
+
+    def print(self):
+        for tick, cpm in self.cpm_cl.items():
+            print('tick = {}, x = {}, y = {}'.format(tick, cpm.x, cpm.y))
+
+
+
 
 
 class Position():
