@@ -55,10 +55,10 @@ class CPM_CL(Exchange):
     
 
     def __init__(self, x: float, y: float, P_l: float, P_u: float, **kwargs):
-        try:
-            super().__init__(x=x,y=y, init_price=y/x)
-        except ZeroDivisionError:
-            super().__init__(x=x,y=y,init_price=0)
+        #try:
+        #    super().__init__(x=x,y=y, init_price=y/x)
+        #except ZeroDivisionError:
+        super().__init__(x=x,y=y,init_price=0)
         
         # Lower and upper bound of price range
         self.P_l, self.P_u = P_l, P_u
@@ -129,9 +129,9 @@ class UniswapV3():
                 y = y_virt - np.sqrt(x_virt * y_virt) * np.sqrt(p_l)
                 self.cpm_cl[p_l] = CPM_CL(x=x, y=y, P_l=p_l, P_u=p_u, gamma=gamma)
             elif p_l < init_price:
-                self.cpm_cl[p_l] = CPM_CL(x=0, y=10, P_l=p_l, P_u=p_u, gamma=gamma)
+                self.cpm_cl[p_l] = CPM_CL(x=0, y=p_u*2, P_l=p_l, P_u=p_u, gamma=gamma)
             elif p_u >= init_price:
-                self.cpm_cl[p_l] = CPM_CL(x=1, y=0, P_l=p_l, P_u=p_u, gamma=gamma)
+                self.cpm_cl[p_l] = CPM_CL(x=2, y=0, P_l=p_l, P_u=p_u, gamma=gamma)
 
         self.fees = Pool(0,0)
         self.gamma = gamma
