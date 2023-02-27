@@ -94,7 +94,7 @@ class CPM_CL(Exchange):
         return delta_y
     
     def _percentage_fee(self, delta_y: float, delta_x: float, **kwargs):
-        assert(delta_y * delta_x < 0, "{} and {} need to have different sign".format(delta_y, delta_x))
+        #assert delta_y * delta_x < 0, "{} and {} need to have different sign".format(delta_y, delta_x)
         if delta_y > 0:
             return {'x':0, 'y':(1-self.gamma)*delta_y}
         else:
@@ -212,11 +212,11 @@ class UniswapV3():
                 break
         return delta_y
 
-    def execute_trade(self, delta_x, delta_y, **kwargs):
-        self.get_delta_y(delta_x = delta_x, execute = True)
+    def execute_trade(self, delta_x, **kwargs):
+        return self.get_delta_y(delta_x = delta_x, execute = True)
     
     def _percentage_fee(self, delta_y: float, delta_x: float, **kwargs):
-        assert(delta_y * delta_x < 0, "{} and {} need to have different sign".format(delta_y, delta_x))
+        #assert delta_y * delta_x < 0, "{} and {} need to have different sign".format(delta_y, delta_x)
         if delta_y > 0:
             return {'x':0, 'y':(1-self.gamma)*delta_y}
         else:
@@ -313,10 +313,15 @@ class Position():
         closeup_x = 1 / self.beta * self.cpm.cpm_cl[self.tick].x - self.cpm.cpm_cl[self.tick].x
         closeup_y = 1 / self.beta * self.cpm.cpm_cl[self.tick].y - self.cpm.cpm_cl[self.tick].y
 
-        payoff = (self.x - closeup_x) * S + (self.y - closeup_y)
+        #payoff = (self.x - closeup_x) * S + (self.y - closeup_y)
 
         self.cpm.cpm_cl[self.tick].x += closeup_x
         self.cpm.cpm_cl[self.tick].y += closeup_y
+
+        self.x -= closeup_x
+        self.y -= closeup_y
+
+        payoff = self.x * S + self.y 
         
         return payoff
 
@@ -328,6 +333,23 @@ class Position():
 
 
 
+class ITM_call(Position):
 
+
+    def __init__(self, cpm: UniswapV3, tick: float, beta: float,):
+        
+        assert beta < 1, "beta should be negative, position holder is taking money out of Uniswap"
+        super().__init__(cpm, tick, beta)
+        self.long_x()
+
+
+    def long_x(self,):
+
+        x = self.cpm.cpm_cl[self.tick].k**2 / (self.cpm.cpm_cl[self.tick].k * np.sqrt(self.tick)) - self.cpm.cpm_cl[self.tick].k / np.sqrt(self.tick_pu)
+        delta_x = 1/self.beta * x - x
+        delta_y = -self.cpm.execute_trade(-delta_x)
+        self.x += delta_x
+        self.y += delta_y
+        return 0
 
 
